@@ -10,3 +10,5 @@ Original menu used to give option to select two potions instead of items - howev
 While partially functional, it would give you potions as items instead. Later FP2 updates replaced the potion preview with information about automatically applied Assist settings.
 
 This mod replaces these two potions with items, as well as fixes wrong icons for some of them. The original menu was made only with older items in mind, and requires further patching to display items added later.
+
+It is, very much, _not compatible_ with **Potion Seller** Mod as it modifies the difficulty menu in it's own way.
