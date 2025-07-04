@@ -5,7 +5,8 @@ using UnityEngine;
 
 namespace CustomStartingItems
 {
-    [BepInPlugin("com.kuborro.plugins.fp2.customstartitemsenable", "CustomStartingItems", "1.0.0")]
+    [BepInPlugin("com.kuborro.plugins.fp2.customstartitemsenable", "CustomStartingItems", "1.0.1")]
+    [BepInIncompatibility("com.eps.plugin.fp2.potion-seller")]
     public class Plugin : BaseUnityPlugin
     {
         internal static new ManualLogSource Logger;
