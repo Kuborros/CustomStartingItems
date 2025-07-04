@@ -1,11 +1,13 @@
 ﻿using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
+using System;
+using System.Reflection;
 using UnityEngine;
 
 namespace CustomStartingItems
 {
-    [BepInPlugin("com.kuborro.plugins.fp2.customstartitemsenable", "CustomStartingItems", "1.0.1")]
+    [BepInPlugin("com.kuborro.plugins.fp2.customstartitemsenable", "CustomStartingItems", "1.0.2")]
     [BepInIncompatibility("com.eps.plugin.fp2.potion-seller")]
     public class Plugin : BaseUnityPlugin
     {
@@ -22,6 +24,12 @@ namespace CustomStartingItems
     public class PatchMenuDifficulty
     {
         static string mainDescription;
+        static bool goModeFromCustomItems;
+
+        //Reflection magic
+        private static readonly MethodInfo m_State_ItemSelect = typeof(MenuDifficulty).GetMethod("State_ItemSelect", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly MethodInfo m_State_Main = typeof(MenuDifficulty).GetMethod("State_Main", BindingFlags.NonPublic | BindingFlags.Instance);
+
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(MenuDifficulty),"Start",MethodType.Normal)]
@@ -70,6 +78,7 @@ namespace CustomStartingItems
             if (___menuSelection >= 5)
             {
                 __instance.itemTipLabel.GetComponent<TextMesh>().text = "Choose your own set of items!\nSelect a slot to see the possible selections.\nEvery item here can be collected later on!";
+                goModeFromCustomItems = true;
             }
             else
             {
@@ -77,7 +86,29 @@ namespace CustomStartingItems
                 {
                     __instance.itemTipLabel.GetComponent<TextMesh>().text = mainDescription;
                 }
+                goModeFromCustomItems = false;
             }
+        }
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(MenuDifficulty), "State_WaitForMenu", MethodType.Normal)]
+        static bool PatchMenuDifficultyWaitForMenu(MenuDifficulty __instance, GameObject ___targetMenu, ref int ___menuSelection)
+        {
+            float num = 5f * FPStage.frameScale;
+            __instance.transform.position = new Vector3(__instance.transform.position.x, (__instance.transform.position.y * (num - 1f) - 360f) / num, __instance.transform.position.z);
+            if (___targetMenu == null)
+            {
+                if (goModeFromCustomItems)
+                {
+                    __instance.state = (FPObjectState)Delegate.CreateDelegate(typeof(FPObjectState), __instance, m_State_ItemSelect);
+                    ___menuSelection = 5;
+                }
+                else
+                {
+                    __instance.state = (FPObjectState)Delegate.CreateDelegate(typeof(FPObjectState), __instance, m_State_Main);
+                }
+            }
+            //Skip original code
+            return false;
         }
     }
 }
